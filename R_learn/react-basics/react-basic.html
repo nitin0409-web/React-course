@@ -1,0 +1,290 @@
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>Chatbot</title>
+      <style>
+        body {
+          font-family: Arial;
+          margin-top: 0px;
+          margin-bottom: 0px;
+        }
+
+        .send-button {
+          background-color: rgb(25, 135, 84);
+          /* CSS property: CSS value;*/
+          color: white;
+          padding: 12px 20px;
+          margin-left: 10px;
+          border: none;
+          border-radius: 10px;
+          font-size: 15px;
+          cursor: pointer;
+
+
+        }
+
+        .chat-input {
+          padding: 12px 15px;
+          border-radius: 10px;
+          border-width: 1px;
+          font-size: 15px; 
+
+          flex-grow: 1;
+        }
+
+        .chat-input-container{
+          display:flex;
+          margin-bottom: 60px;
+        }
+
+        .app-container {
+          max-width: 600px;
+          margin-left:auto;
+          margin-right:auto;
+          height: 100vh; 
+          display: flex;
+          flex-direction: column;
+        }
+
+        .chat-message-user {
+          display: flex;
+          justify-content: end;
+          align-items: start;
+        }
+
+        .chat-message-robot{
+          display:flex;
+          align-items: start;
+
+        }
+        .chat-message-text{
+          background-color: rgb(238, 238, 238);
+          padding: 15px 20px;
+          border-radius: 10px;
+          margin-right: 10px;
+          margin-left: 10px;
+          margin-bottom: 20px;
+          max-width: 300px;
+        }
+        
+        .chat-message-profile{
+          width: 45px;
+        }
+
+        .chat-messages-container{
+          flex-grow: 1;
+          margin-top: 20px;
+          overflow: scroll;
+          scrollbar-width: none;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="js-container"></div>
+      <script>
+          console.log('hello');
+      </script>
+
+      <script src="https://unpkg.com/supersimpledev/react.js"></script>
+      <script src="https://unpkg.com/supersimpledev/react-dom.js"></script>
+
+      <script src="https://unpkg.com/supersimpledev/chatbot.js"></script>
+
+      <script src="https://unpkg.com/supersimpledev/babel.js"></script>
+      <script type="text/babel">
+        function ChatInput({chatMessages, setChatMessages}) {
+         const [inputText, setInputText] = React.useState('');
+          
+         function saveInputText(event){
+           setInputText(event.target.value);
+          }
+        //  lifting the state up.
+          function sendMessage() {
+            const newChatMessages = [
+              ...chatMessages,
+              {
+                message: inputText,
+                sender: 'user',
+                id: crypto.randomUUID()
+              }
+             ];
+ 
+              setChatMessages(newChatMessages);
+
+             const response = Chatbot.getResponse(inputText);
+            setChatMessages([
+              ...newChatMessages,
+              {
+                message: response,
+                sender: 'robot',
+                id: crypto.randomUUID()
+              }
+             ]);
+
+             setInputText('');
+          }
+
+          return (
+          <div className="chat-input-container">
+            <input 
+            placeholder = "Send a message to Chatbot" 
+            size="30" 
+            onChange={saveInputText}
+            value={inputText}
+            // controlled Input
+            className="chat-input"
+            //we can not style a fragment but we can style a div.
+            />
+            <button
+              onClick={sendMessage}
+              className="send-button"
+              >Send</button>
+            
+        </div>  
+        /* <input /> is a self closing tag in JSX 
+        what i don't know is what is the need for a empty tag
+        <input and button cannot be returned at the same time so we need to group them using div 
+        */
+          );
+        }
+        // destructuring  shortcut is heavily applyed in the code below.
+        function ChatMessage({message, sender}){
+          /*const message = props.message;
+            const sender = props.sender;
+            line 35 does the same thing it  is called destructuring */
+          //const { message, sender } = props; line 31 was the shortcut for this line of code.
+          
+            /*
+          if (sender === "robot") {
+            return (
+            <div>
+              <img src="robot.png" width="50" />
+              {message} 
+              </div> 
+              the code above will give a picture represent robot ansering the question asked by user 
+            );
+          }
+            */
+          return (
+            <div className={
+              sender === 'user'
+               ? 'chat-message-user'
+               :'chat-message-robot'
+            }>
+              {sender === 'robot' && ( 
+                <img src="robot.png"
+                 className="chat-message-profile" /> 
+              )}
+              <div 
+              className="chat-message-text">
+              {message}
+              </div>
+              {sender === 'user'  && ( 
+                <img src="user.png" 
+                 className="chat-message-profile"/>
+              ) }
+            </div>
+
+            /* in the code above it  will give a picture representing user and command asked by user
+            as the div aquires the entire line it self 
+            attributes are saved in the components as props*/
+          );
+        }
+
+        
+          //if we use setChatMessage data to update, React will update the HTML 
+          //array[0] rep the current state and arr[1]rep the updater function
+          // in the code above we  are storing values in arr we are forming the  objects. 
+          //  function sendMessage() {
+          //    setChatMessages([
+          //     ...ChatMessages,
+          //     {
+          //       message: 'text',
+          //       sender: 'user',
+          //       id: crypto.randomUUID()
+          //     }
+          //    ]);
+            //...ChatMessages spread operator
+            // in React we should not modify data directly, we always create a copy, and then modify the copy.  
+            // state is the connected data to html when we update state html also updates
+            //mapping and event handlers are also used 
+            
+              function ChatMessages({ chatMessages }) {
+              const chatMessagesRef = React.useRef(null);
+                
+                React.useEffect(() =>{
+                  const containerElem = chatMessagesRef.current;
+                  if (containerElem){
+                    containerElem.scrollTop = containerElem.scrollHeight;
+                  }
+                }, [chatMessages]);
+                //put hooks at the top of the component
+                //Hooks should not be inside anything.
+
+                return (
+                  <div 
+                  className="chat-messages-container"
+                  ref={chatMessagesRef}>
+                  {chatMessages.map((chatMessage) => {
+                    return (
+                      <ChatMessage
+                        message={chatMessage.message}
+                        sender={chatMessage.sender}
+                  /* why are we using {} instead of ()?
+                    the answer could be that {} accept dynamic attributes directly
+                    ()saves the value as string where as {} save the res ult into this props */
+                        key={chatMessage.id}
+                       />
+                    );
+                 })}
+              </div>
+            );
+          }
+
+          function App(){
+             const [chatMessages, setChatMessages]  = React.useState([{ 
+
+            message:"hello chatbot",
+            sender: "user",
+            id: 'id1'
+          }, {
+            message: "Hello! How can I help you?",
+            sender: "robot",
+            id: 'id2'
+          }, {
+            message: "can you get me todays  date?",
+            sender: "user",
+            id: 'id3'
+          }, {
+            message: "Today is September 27",
+            sender: "robot",
+            id: 'id4'
+          }]);
+          //const [chatMessages, setChatMessages] =array;
+          // const chatMessages = array[0];
+          // const setChatMessages = array[1];
+            return (
+              <div className="app-container">
+               
+                 <ChatMessages 
+                  chatMessages={chatMessages}
+                   />
+                    <ChatInput
+                  chatMessages={chatMessages}
+                  setChatMessages={setChatMessages}  
+                />
+              </div>
+            );
+          }
+      
+        // why did i put ; is 29 and not in 22 ?
+        // i think because it 29 is a independent block of code. 
+        // ChatInput is a component syntex code in line 32 does the same thing code 23 does .
+        // the idea behind component is the we can create our own html tags or elements
+
+        const container = document.querySelector('.js-container');
+        ReactDOM.createRoot(container).render(<App />);
+        // make sure not to render a string in the code as it will not take it as a function anymore
+      </script>
+    </body>
+  </html>
