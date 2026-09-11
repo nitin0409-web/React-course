@@ -9,7 +9,7 @@ export function CheckoutPage() {
       <div classname="checkout-header">
         <div classname="header-content">
           <div classname="checkout-header-left-section">
-            <a href="index.html">
+            <a href="/">
               <img classname="logo" src="images/logo.png" />
               <img classname="mobile-logo" src="images/mobile-logo.png" />
             </a>
@@ -17,7 +17,7 @@ export function CheckoutPage() {
 
           <div classname="checkout-header-middle-section">
             Checkout (
-            <a classname="return-to-home-link" href="index.html">
+            <a classname="return-to-home-link" href="/">
               3 items
             </a>
             )
